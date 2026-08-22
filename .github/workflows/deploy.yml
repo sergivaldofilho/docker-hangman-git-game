@@ -27,7 +27,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Instalar dependências(terraform)
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.5.0
 
@@ -68,7 +68,7 @@ jobs:
 
           ACR_SERVER=$(cd terraform && terraform output -raw acr_login_server)
           ACR_USERNAME=$(cd terraform && terraform output -raw acr_admin_username)
-          ACR_PASSWORD=$(cd terraform && terraform output -json | jq -r .acr_admin_password.value)
+          ACR_PASSWORD=$(cd terraform && terraform output -raw acr_admin_password)
           RANDOM_SUFFIX=$(cd terraform && terraform output -raw random_suffix)
 
           echo $ACR_PASSWORD | docker login $ACR_SERVER -u $ACR_USERNAME --password-stdin
