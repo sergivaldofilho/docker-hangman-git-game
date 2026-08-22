@@ -1,0 +1,66 @@
+name: Destroy Git Game Infrastructure
+
+'on':
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Digite "DESTROY" para confirmar'
+        required: true
+        default: ''
+
+jobs:
+  destroy:
+    if: ${{ github.event.inputs.confirm == 'DESTROY' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+
+      - name: Login no Azure
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Instalar dependências(terraform)
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.5.0
+
+      - name: Iniciar Terraform
+        run: |
+          cd terraform
+          export ARM_CLIENT_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}"
+          export ARM_CLIENT_SECRET="${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}"
+          export ARM_TENANT_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}"
+          export ARM_SUBSCRIPTION_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}"
+          terraform init
+
+      - name: Planejar destruição da infraestrutura
+        run: |
+          cd terraform
+          export ARM_CLIENT_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}"
+          export ARM_CLIENT_SECRET="${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}"
+          export ARM_TENANT_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}"
+          export ARM_SUBSCRIPTION_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}"
+          terraform plan -destroy
+
+      - name: Destruir infraestrutura
+        run: |
+          cd terraform
+          export ARM_CLIENT_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).clientId }}"
+          export ARM_CLIENT_SECRET="${{ fromJson(secrets.AZURE_CREDENTIALS).clientSecret }}"
+          export ARM_TENANT_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).tenantId }}"
+          export ARM_SUBSCRIPTION_ID="${{ fromJson(secrets.AZURE_CREDENTIALS).subscriptionId }}"
+          terraform destroy -auto-approve
+
+      - name: Destroy Complete
+        run: |
+          echo "A infraestrutura do Git Game foi destruída com sucesso."
+          echo ""
+          echo "Recursos destruídos:"
+          echo "- Resource Group: git-game-rg"
+          echo "- Container Registry"
+          echo "- Container Instances"
+          echo "- Todas as imagens Docker"
+          echo ""
+          echo "Custo: R$ 0,00 após a destruição, não haverá cobrança de recursos!"
