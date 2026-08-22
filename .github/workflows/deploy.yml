@@ -68,7 +68,7 @@ jobs:
 
           ACR_SERVER=$(cd terraform && terraform output -raw acr_login_server)
           ACR_USERNAME=$(cd terraform && terraform output -raw acr_admin_username)
-          ACR_PASSWORD=$(cd terraform && terraform output -raw acr_admin_password)
+          ACR_PASSWORD=$(cd terraform && terraform output -json acr_admin_password | jq -r .)
           RANDOM_SUFFIX=$(cd terraform && terraform output -raw random_suffix)
 
           echo $ACR_PASSWORD | docker login $ACR_SERVER -u $ACR_USERNAME --password-stdin
